@@ -3,7 +3,7 @@ grammar Jack;
 /**
  * Parser rules
  */
-prog:
+program:
     classDec
     EOF
     ;
@@ -17,22 +17,24 @@ classDec:
 className: IDENTIFIER ;
 
 classVarDec:
-    ('static' | 'field') typeName varName (',' varName)* ';'
+    kind=('static' | 'field') typedVariable (',' varName)* ';'
     ;
 
 varName: IDENTIFIER ;
 
 subRoutineDec:
-    ('constructor' | 'function' | 'method') ('void' | typeName)
+    kind=('constructor' | 'function' | 'method') ('void' | typeName)
         subroutineName '(' parameterList ')' subroutineBody ;
 
 subroutineName: IDENTIFIER ;
 
-parameterList: ((typeName varName) (',' typeName varName)*)? ;
+parameterList: (params+=typedVariable (',' params+=typedVariable*))? ;
 
 subroutineBody: '{' varDec* statements '}' ;
 
-varDec: 'var' typeName varName (',' varName)* ';' ;
+varDec: 'var' typedVariable  (',' varName)* ';' ;
+
+typedVariable: typeName varName ;
 
 typeName:
     INT
@@ -73,15 +75,16 @@ returnStatement:
 // Expressions
 
 expression: term (op term)* ;
+
 term:
-    INTEGER
-    | STRING
-    | keywordConstant
-    | varName
-    | varName '[' expression ']'
-    | subroutineCall
-    | '(' expression ')'
-    | unaryOp term
+    INTEGER                      # atom
+    | STRING                     # atom
+    | keywordConstant            # atom
+    | varName                    # atom
+    | varName '[' expression ']' # arrayReference
+    | subroutineCall             # subroutineExpression
+    | '(' expression ')'         # NestedExpression
+    | unaryOp term               # UnaryExpression
     ;
 
 subroutineCall:
@@ -89,7 +92,7 @@ subroutineCall:
     | (className | varName) '.' subroutineName '(' expressionList ')'
     ;
 
-expressionList: (expression (',' expression)*)? ;
+expressionList: (expressions+=expression (',' expressions+=expression)*)? ;
 op: ADD | SUB | MUL | DIV | AND | OR | LT | GT | EQ ;
 unaryOp: SUB | NOT ;
 

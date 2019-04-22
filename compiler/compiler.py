@@ -1,8 +1,12 @@
+import antlr4
+from typing import Dict, Any
+
 from parser.JackLexer import JackLexer
 from parser.JackParser import JackParser
+from .visitor import Visitor
 
 
-def lex(input_stream: str) -> [str]:
+def lex(input_stream: antlr4.InputStream) -> Dict[Any, Any]:
     lexer = JackLexer(input_stream)
     tokens = []
 
@@ -16,6 +20,16 @@ def lex(input_stream: str) -> [str]:
         )
 
     return tokens
+
+
+def generate(input_stream: antlr4.InputStream) -> str:
+    visitor = Visitor()
+    lexer = JackLexer(input_stream)
+    tokens = antlr4.CommonTokenStream(lexer)
+    parser = JackParser(tokens)
+    tree = parser.program()
+
+    return visitor.visit(tree)
 
 
 def _get_display_name(tokenType: int) -> str:

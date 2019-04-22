@@ -8,12 +8,12 @@ else:
 # This class defines a complete listener for a parse tree produced by JackParser.
 class JackListener(ParseTreeListener):
 
-    # Enter a parse tree produced by JackParser#prog.
-    def enterProg(self, ctx:JackParser.ProgContext):
+    # Enter a parse tree produced by JackParser#program.
+    def enterProgram(self, ctx:JackParser.ProgramContext):
         pass
 
-    # Exit a parse tree produced by JackParser#prog.
-    def exitProg(self, ctx:JackParser.ProgContext):
+    # Exit a parse tree produced by JackParser#program.
+    def exitProgram(self, ctx:JackParser.ProgramContext):
         pass
 
 
@@ -98,6 +98,15 @@ class JackListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by JackParser#typedVariable.
+    def enterTypedVariable(self, ctx:JackParser.TypedVariableContext):
+        pass
+
+    # Exit a parse tree produced by JackParser#typedVariable.
+    def exitTypedVariable(self, ctx:JackParser.TypedVariableContext):
+        pass
+
+
     # Enter a parse tree produced by JackParser#typeName.
     def enterTypeName(self, ctx:JackParser.TypeNameContext):
         pass
@@ -179,12 +188,48 @@ class JackListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by JackParser#term.
-    def enterTerm(self, ctx:JackParser.TermContext):
+    # Enter a parse tree produced by JackParser#atom.
+    def enterAtom(self, ctx:JackParser.AtomContext):
         pass
 
-    # Exit a parse tree produced by JackParser#term.
-    def exitTerm(self, ctx:JackParser.TermContext):
+    # Exit a parse tree produced by JackParser#atom.
+    def exitAtom(self, ctx:JackParser.AtomContext):
+        pass
+
+
+    # Enter a parse tree produced by JackParser#arrayReference.
+    def enterArrayReference(self, ctx:JackParser.ArrayReferenceContext):
+        pass
+
+    # Exit a parse tree produced by JackParser#arrayReference.
+    def exitArrayReference(self, ctx:JackParser.ArrayReferenceContext):
+        pass
+
+
+    # Enter a parse tree produced by JackParser#subroutineExpression.
+    def enterSubroutineExpression(self, ctx:JackParser.SubroutineExpressionContext):
+        pass
+
+    # Exit a parse tree produced by JackParser#subroutineExpression.
+    def exitSubroutineExpression(self, ctx:JackParser.SubroutineExpressionContext):
+        pass
+
+
+    # Enter a parse tree produced by JackParser#NestedExpression.
+    def enterNestedExpression(self, ctx:JackParser.NestedExpressionContext):
+        pass
+
+    # Exit a parse tree produced by JackParser#NestedExpression.
+    def exitNestedExpression(self, ctx:JackParser.NestedExpressionContext):
+        pass
+
+
+    # Enter a parse tree produced by JackParser#UnaryExpression.
+    def enterUnaryExpression(self, ctx:JackParser.UnaryExpressionContext):
+        pass
+
+    # Exit a parse tree produced by JackParser#UnaryExpression.
+    def exitUnaryExpression(self, ctx:JackParser.UnaryExpressionContext):
         pass
 
 

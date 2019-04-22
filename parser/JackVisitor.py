@@ -9,8 +9,8 @@ else:
 
 class JackVisitor(ParseTreeVisitor):
 
-    # Visit a parse tree produced by JackParser#prog.
-    def visitProg(self, ctx:JackParser.ProgContext):
+    # Visit a parse tree produced by JackParser#program.
+    def visitProgram(self, ctx:JackParser.ProgramContext):
         return self.visitChildren(ctx)
 
 
@@ -59,6 +59,11 @@ class JackVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by JackParser#typedVariable.
+    def visitTypedVariable(self, ctx:JackParser.TypedVariableContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by JackParser#typeName.
     def visitTypeName(self, ctx:JackParser.TypeNameContext):
         return self.visitChildren(ctx)
@@ -104,8 +109,28 @@ class JackVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by JackParser#term.
-    def visitTerm(self, ctx:JackParser.TermContext):
+    # Visit a parse tree produced by JackParser#atom.
+    def visitAtom(self, ctx:JackParser.AtomContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by JackParser#arrayReference.
+    def visitArrayReference(self, ctx:JackParser.ArrayReferenceContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by JackParser#subroutineExpression.
+    def visitSubroutineExpression(self, ctx:JackParser.SubroutineExpressionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by JackParser#NestedExpression.
+    def visitNestedExpression(self, ctx:JackParser.NestedExpressionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by JackParser#UnaryExpression.
+    def visitUnaryExpression(self, ctx:JackParser.UnaryExpressionContext):
         return self.visitChildren(ctx)
 
 
