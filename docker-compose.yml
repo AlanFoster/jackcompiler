@@ -5,3 +5,11 @@ services:
     build: .
     volumes:
       - ./:/app
+
+  test:
+    <<: *default
+    command: >
+      pytest
+        -vv
+        --black
+        --flake8

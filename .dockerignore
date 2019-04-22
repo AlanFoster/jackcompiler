@@ -1,0 +1,10 @@
+*
+
+!compiler
+!parser
+!tests
+!compiler.py
+!Jack.g4
+!Pipfile
+!Pipfile.lock
+!setup.cfg
