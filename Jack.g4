@@ -56,7 +56,7 @@ statement:
     ;
 
 letStatement:
-    'let' varName('[' expression ']')? '=' expression ';' ;
+    'let' varName('[' index=expression ']')? '=' value=expression ';' ;
 
 ifStatement:
     'if' '(' expression ')' '{' statements '}'

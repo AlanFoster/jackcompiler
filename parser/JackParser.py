@@ -1252,6 +1252,8 @@ class JackParser ( Parser ):
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
+            self.index = None # ExpressionContext
+            self.value = None # ExpressionContext
 
         def LET(self):
             return self.getToken(JackParser.LET, 0)
@@ -1263,15 +1265,15 @@ class JackParser ( Parser ):
         def EQ(self):
             return self.getToken(JackParser.EQ, 0)
 
+        def SEMI(self):
+            return self.getToken(JackParser.SEMI, 0)
+
         def expression(self, i:int=None):
             if i is None:
                 return self.getTypedRuleContexts(JackParser.ExpressionContext)
             else:
                 return self.getTypedRuleContext(JackParser.ExpressionContext,i)
 
-
-        def SEMI(self):
-            return self.getToken(JackParser.SEMI, 0)
 
         def LBRACK(self):
             return self.getToken(JackParser.LBRACK, 0)
@@ -1317,7 +1319,7 @@ class JackParser ( Parser ):
                 self.state = 155
                 self.match(JackParser.LBRACK)
                 self.state = 156
-                self.expression()
+                localctx.index = self.expression()
                 self.state = 157
                 self.match(JackParser.RBRACK)
 
@@ -1325,7 +1327,7 @@ class JackParser ( Parser ):
             self.state = 161
             self.match(JackParser.EQ)
             self.state = 162
-            self.expression()
+            localctx.value = self.expression()
             self.state = 163
             self.match(JackParser.SEMI)
         except RecognitionException as re:

@@ -24,3 +24,37 @@ def test_simple_expression():
         "push constant 0\n"
         "return\n"
     )
+
+
+def test_handle_simple_assignment():
+    source = """
+        class Main {
+           function void main() {
+              var int x;
+              var int y;
+              var int z;
+
+              let x = 2;
+              let y = 4;
+              let z = x + y;
+
+              return;
+           }
+        }
+     """
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        "function Main.main 3\n"
+        "push constant 2\n"
+        "pop local 0\n"
+        "push constant 4\n"
+        "pop local 1\n"
+        "push local 0\n"
+        "push local 1\n"
+        "add\n"
+        "pop local 2\n"
+        "push constant 0\n"
+        "return\n"
+    )
+

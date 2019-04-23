@@ -1,8 +1,12 @@
 from parser.JackParser import JackParser
 from parser.JackVisitor import JackVisitor
+from .symbol_table import Symbol, SymbolTable, EmptySymbolTable, SymbolType
 
 
 class Visitor(JackVisitor):
+    def __init__(self):
+        self.symbol_table = SymbolTable(EmptySymbolTable)
+
     # Visit a parse tree produced by JackParser#prog.
     def visitProgram(self, ctx: JackParser.ProgramContext):
         return self.visit(ctx.classDec())
@@ -13,7 +17,7 @@ class Visitor(JackVisitor):
             raise TypeError("Class not supported")
 
         # class_declarations = self.visitChildren(ctx.classVarDec().ctx)
-        statements = "\n".join([self.visit(child) for child in ctx.subRoutineDec()])
+        statements = "".join([self.visit(child) for child in ctx.subRoutineDec()])
 
         return statements
 
@@ -33,12 +37,15 @@ class Visitor(JackVisitor):
     def visitSubRoutineDec(self, ctx: JackParser.SubRoutineDecContext):
         kind = ctx.kind.text
         name = ctx.subroutineName().getText()
-        params = ctx.parameterList().params
-        param_count = len(params)
+        # Note: The symbol table for methods must additionally contain an entry for "this"
+        body = self.visit(ctx.subroutineBody())
+
+        # Note: We must visit the subroutine body before knowing this value
+        local_variable_count = self.symbol_table.local_variable_count()
 
         if kind == "function":
-            comment = f"function Main.{name} {param_count}\n"
-            return comment + self.visit(ctx.subroutineBody())
+            comment = f"function Main.{name} {local_variable_count}\n"
+            return comment + body
 
         raise ValueError(f"kind not handled correctly {kind}")
 
@@ -52,11 +59,30 @@ class Visitor(JackVisitor):
 
     # Visit a parse tree produced by JackParser#subroutineBody.
     def visitSubroutineBody(self, ctx: JackParser.SubroutineBodyContext):
-        return self.visit(ctx.statements())
+        var_decs = "".join([self.visit(var_dec) for var_dec in ctx.varDec()])
+        statements = self.visit(ctx.statements())
+
+        return var_decs + statements
 
     # Visit a parse tree produced by JackParser#varDec.
     def visitVarDec(self, ctx: JackParser.VarDecContext):
-        return self.visitChildren(ctx)
+        typed_variable = ctx.typedVariable()
+        var_name = typed_variable.varName().getText()
+        type_name = typed_variable.typeName().getText()
+
+        self.symbol_table.add(
+            Symbol(name=var_name, type_name=type_name, kind=SymbolType.LOCAL)
+        )
+        for additional_var in ctx.varName():
+            self.symbol_table.add(
+                Symbol(
+                    name=additional_var.getText(),
+                    type_name=type_name,
+                    kind=SymbolType.LOCAL,
+                )
+            )
+
+        return ""
 
     # Visit a parse tree produced by JackParser#typedVariable.
     def visitTypedVariable(self, ctx: JackParser.TypedVariableContext):
@@ -77,7 +103,17 @@ class Visitor(JackVisitor):
 
     # Visit a parse tree produced by JackParser#letStatement.
     def visitLetStatement(self, ctx: JackParser.LetStatementContext):
-        return self.visitChildren(ctx)
+        if ctx.index:
+            raise ValueError(
+                f"Array indexing not supported yet for expression {ctx.getText()}"
+            )
+
+        var_name = ctx.varName().getText()
+        symbol = self.symbol_table.get(var_name)
+        calculate_value = self.visit(ctx.value)
+        store_result = f"pop {symbol.segment} {symbol.number}\n"
+
+        return calculate_value + store_result
 
     # Visit a parse tree produced by JackParser#ifStatement.
     def visitIfStatement(self, ctx: JackParser.IfStatementContext):
@@ -113,6 +149,9 @@ class Visitor(JackVisitor):
     def visitAtom(self, ctx: JackParser.AtomContext):
         if ctx.INTEGER():
             return f"push constant {ctx.INTEGER().getText()}\n"
+        elif ctx.varName():
+            symbol = self.symbol_table.get(ctx.varName().getText())
+            return f"push {symbol.segment} {symbol.number}\n"
         else:
             raise TypeError(f"Could not handle atom {ctx.getText()}")
 
