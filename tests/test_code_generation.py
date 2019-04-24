@@ -122,3 +122,56 @@ def test_handle_simple_if_else_statement():
         "push constant 0\n"
         "return\n"
     )
+
+
+def test_handle_simple_while_loop():
+    source = """
+        class Main {
+           function void main() {
+              var int x;
+
+              let x = 0;
+
+              while (x < 10) {
+                let x = x + 1;
+                do Output.printInt(x);
+                do Output.println();
+              }
+
+              return;
+           }
+        }
+    """
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        "function Main.main 1\n"
+        # x = 0
+        "push constant 0\n"
+        "pop local 0\n"
+        # while (x < 10) {
+        "label LOOP_START.1\n"
+        "push local 0\n"
+        "push constant 10\n"
+        "lt\n"
+        "not\n"
+        "if-goto LOOP_END.2\n"
+        # let x = x + 1
+        "push local 0\n"
+        "push constant 1\n"
+        "add\n"
+        "pop local 0\n"
+        # do Output.printInt(x)
+        "push local 0\n"
+        "call Output.printInt 1\n"
+        "pop temp 0\n"
+        # do Output.println()
+        "call Output.println 0\n"
+        "pop temp 0\n"
+        "goto LOOP_START.1\n"
+        # }
+        "label LOOP_END.2\n"
+        # return
+        "push constant 0\n"
+        "return\n"
+    )

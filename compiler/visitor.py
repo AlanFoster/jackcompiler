@@ -150,7 +150,21 @@ class Visitor(JackVisitor):
 
     # Visit a parse tree produced by JackParser#whileStatement.
     def visitWhileStatement(self, ctx: JackParser.WhileStatementContext):
-        return self.visitChildren(ctx)
+        expression = self.visit(ctx.expression())
+        statements = self.visit(ctx.statements())
+
+        start_label = self.next_label("LOOP_START")
+        end_label = self.next_label("LOOP_END")
+
+        return (
+            f"label {start_label}\n"
+            + expression
+            + "not\n"
+            + f"if-goto {end_label}\n"
+            + statements
+            + f"goto {start_label}\n"
+            + f"label {end_label}\n"
+        )
 
     # Visit a parse tree produced by JackParser#doStatement.
     def visitDoStatement(self, ctx: JackParser.DoStatementContext):
@@ -210,7 +224,7 @@ class Visitor(JackVisitor):
 
     # Visit a parse tree produced by JackParser#subroutineCall.
     def visitSubroutineCall(self, ctx: JackParser.SubroutineCallContext):
-        expressions = self.visitChildren(ctx.expressionList())
+        expressions = self.visitChildren(ctx.expressionList()) or ""
         arg_count = len(ctx.expressionList().expressions)
 
         routine_name = ctx.subroutineName().getText()
