@@ -1344,6 +1344,8 @@ class JackParser ( Parser ):
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
+            self.true_statements = None # StatementsContext
+            self.false_statements = None # StatementsContext
 
         def IF(self):
             return self.getToken(JackParser.IF, 0)
@@ -1364,18 +1366,18 @@ class JackParser ( Parser ):
             else:
                 return self.getToken(JackParser.LBRACE, i)
 
+        def RBRACE(self, i:int=None):
+            if i is None:
+                return self.getTokens(JackParser.RBRACE)
+            else:
+                return self.getToken(JackParser.RBRACE, i)
+
         def statements(self, i:int=None):
             if i is None:
                 return self.getTypedRuleContexts(JackParser.StatementsContext)
             else:
                 return self.getTypedRuleContext(JackParser.StatementsContext,i)
 
-
-        def RBRACE(self, i:int=None):
-            if i is None:
-                return self.getTokens(JackParser.RBRACE)
-            else:
-                return self.getToken(JackParser.RBRACE, i)
 
         def ELSE(self):
             return self.getToken(JackParser.ELSE, 0)
@@ -1418,7 +1420,7 @@ class JackParser ( Parser ):
             self.state = 169
             self.match(JackParser.LBRACE)
             self.state = 170
-            self.statements()
+            localctx.true_statements = self.statements()
             self.state = 171
             self.match(JackParser.RBRACE)
             self.state = 177
@@ -1430,7 +1432,7 @@ class JackParser ( Parser ):
                 self.state = 173
                 self.match(JackParser.LBRACE)
                 self.state = 174
-                self.statements()
+                localctx.false_statements = self.statements()
                 self.state = 175
                 self.match(JackParser.RBRACE)
 

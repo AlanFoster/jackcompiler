@@ -58,3 +58,67 @@ def test_handle_simple_assignment():
         "return\n"
     )
 
+
+def test_handle_simple_if_statement():
+    source = """
+        class Main {
+           function void main() {
+              if (true) {
+                do Output.printInt(1);
+              }
+
+              return;
+           }
+        }
+    """
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        "function Main.main 0\n"
+        "push constant 0\n"
+        "not\n"
+        "not\n"
+        "if-goto IF_END.2\n"
+        "push constant 1\n"
+        "call Output.printInt 1\n"
+        "pop temp 0\n"
+        "label IF_END.2\n"
+        "push constant 0\n"
+        "return\n"
+    )
+
+
+def test_handle_simple_if_else_statement():
+    source = """
+        class Main {
+           function void main() {
+              if (true) {
+                do Output.printInt(1);
+              } else {
+                do Output.printInt(0);
+              }
+
+              return;
+           }
+        }
+    """
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        "function Main.main 0\n"
+        "push constant 0\n"
+        "not\n"
+        "not\n"
+        "if-goto IF_ELSE.1\n"
+        "push constant 1\n"
+        "call Output.printInt 1\n"
+        "pop temp 0\n"
+        "goto IF_END.2\n"
+        "label IF_ELSE.1\n"
+        "push constant 0\n"
+        "call Output.printInt 1\n"
+        "pop temp 0\n"
+        "label IF_END.2\n"
+        "push constant 0\n"
+        "return\n"
+    )

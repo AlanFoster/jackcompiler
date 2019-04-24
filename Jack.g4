@@ -59,8 +59,8 @@ letStatement:
     'let' varName('[' index=expression ']')? '=' value=expression ';' ;
 
 ifStatement:
-    'if' '(' expression ')' '{' statements '}'
-    ('else' '{' statements '}')?
+    'if' '(' expression ')' '{' true_statements=statements '}'
+    ('else' '{' false_statements=statements '}')?
     ;
 
 whileStatement:

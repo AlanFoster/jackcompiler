@@ -6,6 +6,11 @@ from .symbol_table import Symbol, SymbolTable, EmptySymbolTable, SymbolType
 class Visitor(JackVisitor):
     def __init__(self):
         self.symbol_table = SymbolTable(EmptySymbolTable)
+        self.label_count = 0
+
+    def next_label(self, prefix):
+        self.label_count = self.label_count + 1
+        return f"{prefix}.{self.label_count}"
 
     # Visit a parse tree produced by JackParser#prog.
     def visitProgram(self, ctx: JackParser.ProgramContext):
@@ -117,7 +122,31 @@ class Visitor(JackVisitor):
 
     # Visit a parse tree produced by JackParser#ifStatement.
     def visitIfStatement(self, ctx: JackParser.IfStatementContext):
-        return self.visitChildren(ctx)
+        # return self.visitChildren(ctx)
+        expression = self.visit(ctx.expression())
+        true_statements = self.visit(ctx.true_statements)
+
+        else_label = self.next_label("IF_ELSE")
+        end_label = self.next_label("IF_END")
+
+        if not ctx.false_statements:
+            return (
+                expression
+                + "not\n"
+                + f"if-goto {end_label}\n"
+                + true_statements
+                + f"label {end_label}\n"
+            )
+        else:
+            false_statements = self.visit(ctx.false_statements)
+            return (
+                expression
+                + "not\n"
+                + f"if-goto {else_label}\n"
+                + true_statements
+                + f"goto {end_label}\n"
+                f"label {else_label}\n" + false_statements + f"label {end_label}\n"
+            )
 
     # Visit a parse tree produced by JackParser#whileStatement.
     def visitWhileStatement(self, ctx: JackParser.WhileStatementContext):
@@ -149,11 +178,19 @@ class Visitor(JackVisitor):
     def visitAtom(self, ctx: JackParser.AtomContext):
         if ctx.INTEGER():
             return f"push constant {ctx.INTEGER().getText()}\n"
+        elif ctx.keywordConstant():
+            text = ctx.keywordConstant().getText()
+            if text == "false":
+                return "push constant 0\n"
+            elif text == "true":
+                return "push constant 0\nnot\n"
+            else:
+                raise ValueError(f"Unexpected literal value '{text}'")
         elif ctx.varName():
             symbol = self.symbol_table.get(ctx.varName().getText())
             return f"push {symbol.segment} {symbol.number}\n"
         else:
-            raise TypeError(f"Could not handle atom {ctx.getText()}")
+            raise ValueError(f"Could not handle atom {ctx.getText()}")
 
     # Visit a parse tree produced by JackParser#arrayReference.
     def visitArrayReference(self, ctx: JackParser.ArrayReferenceContext):

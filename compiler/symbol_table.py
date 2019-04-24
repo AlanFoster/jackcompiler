@@ -41,8 +41,6 @@ class SymbolTable:
         self.symbols[symbol.name] = symbol
 
     def get(self, name: str):
-        print(self.symbols)
-
         if name in self.symbols:
             return self.symbols[name]
 
