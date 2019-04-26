@@ -1,11 +1,13 @@
 from parser.JackParser import JackParser
 from parser.JackVisitor import JackVisitor
-from .symbol_table import Symbol, SymbolTable, EmptySymbolTable, SymbolType
+from .symbol_table import Symbol, EmptySymbolTable, SymbolType
 
 
 class Visitor(JackVisitor):
     def __init__(self):
-        self.symbol_table = SymbolTable(EmptySymbolTable)
+        self.class_name = None
+        self.class_type = None
+        self.symbol_table = EmptySymbolTable()
         self.label_count = 0
 
     def next_label(self, prefix):
@@ -18,11 +20,32 @@ class Visitor(JackVisitor):
 
     # Visit a parse tree produced by JackParser#classDec.
     def visitClassDec(self, ctx: JackParser.ClassDecContext):
-        if ctx.className().getText() != "Main":
-            raise TypeError("Class not supported")
+        self.class_name = ctx.className().getText()
+        self.class_type = ctx.className().getText()
+        self.symbol_table = self.symbol_table.enter_scope()
 
-        # class_declarations = self.visitChildren(ctx.classVarDec().ctx)
+        # Bind fields and static values to the newly created scope
+        for class_var_dec in ctx.classVarDec():
+            kind = SymbolType[class_var_dec.kind.text.upper()]
+            typed_variable = class_var_dec.typedVariable()
+            var_name = typed_variable.varName().getText()
+            type_name = typed_variable.typeName().getText()
+
+            self.symbol_table.add(
+                Symbol(name=var_name, type_name=type_name, kind=kind)
+            )
+            for additional_var in class_var_dec.varName():
+                self.symbol_table.add(
+                    Symbol(
+                        name=additional_var.getText(),
+                        type_name=type_name,
+                        kind=kind
+                    )
+                )
+
         statements = "".join([self.visit(child) for child in ctx.subRoutineDec()])
+
+        self.symbol_table = self.symbol_table.exit_scope()
 
         return statements
 
@@ -43,7 +66,9 @@ class Visitor(JackVisitor):
         kind = ctx.kind.text
         name = ctx.subroutineName().getText()
 
-        # add arguments into the symbol table
+        self.symbol_table = self.symbol_table.enter_scope()
+
+        # add the given arguments into the symbol table
         for parameter in ctx.parameterList().params:
             var_name = parameter.varName().getText()
             type_name = parameter.typeName().getText()
@@ -57,9 +82,20 @@ class Visitor(JackVisitor):
         # Note: We must visit the subroutine body before knowing this value
         local_variable_count = self.symbol_table.local_variable_count()
 
+        self.symbol_table = self.symbol_table.exit_scope()
+
         if kind == "function":
-            comment = f"function Main.{name} {local_variable_count}\n"
-            return comment + body
+            function_declaration = f"function {self.class_name}.{name} {local_variable_count}\n"
+            return function_declaration + body
+
+        if kind == "constructor":
+            function_declaration = f"function {self.class_name}.{name} {local_variable_count}\n"
+            object_allocation = (
+                f"push constant {self.symbol_table.field_variable_count()}\n"
+                "call Memory.alloc 1\n"
+                "pop pointer 0\n"
+            )
+            return function_declaration + object_allocation + body
 
         raise ValueError(f"kind not handled correctly {kind}")
 
@@ -207,6 +243,8 @@ class Visitor(JackVisitor):
                 return "push constant 0\n"
             elif text == "true":
                 return "push constant 0\nnot\n"
+            elif text == "this":
+                return "push pointer 0\n"
             else:
                 raise ValueError(f"Unexpected literal value '{text}'")
         elif ctx.varName():

@@ -198,3 +198,36 @@ def test_function_with_arguments():
         "push local 0\n"
         "return\n"
     )
+
+
+def test_constructor():
+    source = """
+        class Point {
+            field int x;
+            field int y;
+
+            constructor Point new(int xLocation, int yLocation) {
+                let x = xLocation;
+                let y = yLocation;
+                return this;
+            }
+        }
+    """
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        "function Point.new 0\n"
+        # Allocate memory for two local variables and update the `this` pointer
+        "push constant 2\n"
+        "call Memory.alloc 1\n"
+        "pop pointer 0\n"
+        # let x = xLocation
+        "push argument 0\n"
+        "pop this 0\n"
+        # let y = yLocation
+        "push argument 1\n"
+        "pop this 1\n"
+        # Return this pointer
+        "push pointer 0\n"
+        "return\n"
+    )

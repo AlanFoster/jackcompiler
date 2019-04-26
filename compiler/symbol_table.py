@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, Optional
@@ -24,13 +25,61 @@ class Symbol:
             return "local"
         elif self.kind is SymbolType.ARGUMENT:
             return "argument"
+        elif self.kind is SymbolType.FIELD:
+            return "this"
         else:
-            return ValueError(f"No segment for {self.kind}")
+            raise ValueError(f"No segment for {self.kind}")
+
+
+class SymbolTable:
+    @abstractmethod
+    def add(self, symbol: Symbol):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get(self, name: str):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def enter_scope(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def exit_scope(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def field_variable_count(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def local_variable_count(self):
+        raise NotImplementedError()
+
+
+class EmptySymbolTable(SymbolTable):
+    def add(self):
+        raise NotImplementedError()
+
+    def get(self, name):
+        raise ValueError(f"Missing variable '{name}'.")
+
+    def enter_scope(self):
+        return ChildSymbolTable(self)
+
+    def exit_scope(self):
+        raise NotImplementedError()
+
+    def field_variable_count(self):
+        return 0
+
+    def local_variable_count(self):
+        return 0
 
 
 @dataclass
-class SymbolTable:
-    parent: Optional["SymbolTable"]
+class ChildSymbolTable(SymbolTable):
+    parent: Optional[SymbolTable]
     symbols: Dict[str, Symbol] = field(default_factory=dict)
 
     def add(self, symbol: Symbol):
@@ -44,13 +93,16 @@ class SymbolTable:
         if name in self.symbols:
             return self.symbols[name]
 
-        if self.parent is None:
-            raise ValueError(f"Missing variable '{name}' in current scope.")
-
         return self.parent.get(name)
+
+    def enter_scope(self):
+        return ChildSymbolTable(self)
+
+    def exit_scope(self):
+        return self.parent
+
+    def field_variable_count(self):
+        return sum(v.kind is SymbolType.FIELD for k, v in self.symbols.items()) + self.parent.field_variable_count()
 
     def local_variable_count(self):
         return sum(v.kind is SymbolType.LOCAL for k, v in self.symbols.items())
-
-
-EmptySymbolTable = SymbolTable(None)
