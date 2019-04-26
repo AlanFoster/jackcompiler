@@ -42,6 +42,15 @@ class Visitor(JackVisitor):
     def visitSubRoutineDec(self, ctx: JackParser.SubRoutineDecContext):
         kind = ctx.kind.text
         name = ctx.subroutineName().getText()
+
+        # add arguments into the symbol table
+        for parameter in ctx.parameterList().params:
+            var_name = parameter.varName().getText()
+            type_name = parameter.typeName().getText()
+            self.symbol_table.add(
+                Symbol(name=var_name, type_name=type_name, kind=SymbolType.ARGUMENT)
+            )
+
         # Note: The symbol table for methods must additionally contain an entry for "this"
         body = self.visit(ctx.subroutineBody())
 
@@ -172,9 +181,9 @@ class Visitor(JackVisitor):
 
     # Visit a parse tree produced by JackParser#returnStatement.
     def visitReturnStatement(self, ctx: JackParser.ReturnStatementContext):
-        if ctx.expression():
-            raise ValueError("Return expressions not handled yet")
-        return_value = "push constant 0\n"
+        return_value = (
+            self.visit(ctx.expression()) if ctx.expression() else "push constant 0\n"
+        )
         return return_value + "return\n"
 
     # Visit a parse tree produced by JackParser#expression.

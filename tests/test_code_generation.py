@@ -175,3 +175,26 @@ def test_handle_simple_while_loop():
         "push constant 0\n"
         "return\n"
     )
+
+
+def test_function_with_arguments():
+    source = """
+        class Main {
+           function int add(int x, int y) {
+              var int answer;
+              let answer = x + y;
+              return answer;
+           }
+        }
+    """
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        "function Main.add 1\n"
+        "push argument 0\n"
+        "push argument 1\n"
+        "add\n"
+        "pop local 0\n"
+        "push local 0\n"
+        "return\n"
+    )

@@ -20,9 +20,9 @@ class Symbol:
 
     @property
     def segment(self):
-        if self.kind == SymbolType.LOCAL:
+        if self.kind is SymbolType.LOCAL:
             return "local"
-        elif self.kind == SymbolType.ARGUMENT:
+        elif self.kind is SymbolType.ARGUMENT:
             return "argument"
         else:
             return ValueError(f"No segment for {self.kind}")
@@ -37,7 +37,7 @@ class SymbolTable:
         if symbol.name in self.symbols:
             raise ValueError(f"Duplicate variable {symbol.name} found.")
 
-        symbol.number = sum(v.kind == symbol.kind for k, v in self.symbols.items())
+        symbol.number = sum(v.kind is symbol.kind for k, v in self.symbols.items())
         self.symbols[symbol.name] = symbol
 
     def get(self, name: str):
@@ -50,7 +50,7 @@ class SymbolTable:
         return self.parent.get(name)
 
     def local_variable_count(self):
-        return sum(v.kind == SymbolType.LOCAL for k, v in self.symbols.items())
+        return sum(v.kind is SymbolType.LOCAL for k, v in self.symbols.items())
 
 
 EmptySymbolTable = SymbolTable(None)
