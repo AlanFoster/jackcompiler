@@ -479,15 +479,110 @@ def test_arrays():
         "push local 0\n"
         "push constant 0\n"
         "add\n"
-        "pop pointer 1\n"
         "push constant 15\n"
+        "pop temp 0\n"
+        "pop pointer 1\n"
+        "push temp 0\n"
         "pop that 0\n"
         # array[1] = 30
         "push local 0\n"
         "push constant 1\n"
         "add\n"
-        "pop pointer 1\n"
         "push constant 30\n"
+        "pop temp 0\n"
+        "pop pointer 1\n"
+        "push temp 0\n"
+        "pop that 0\n"
+        # do Output.printInt(array[0]);
+        "push local 0\n"
+        "push constant 0\n"
+        "add\n"
+        "pop pointer 1\n"
+        "push that 0\n"
+        "call Output.printInt 1\n"
+        "pop temp 0\n"
+        # do Output.printInt(array[1]);
+        "push local 0\n"
+        "push constant 1\n"
+        "add\n"
+        "pop pointer 1\n"
+        "push that 0\n"
+        "call Output.printInt 1\n"
+        "pop temp 0\n"
+        # return
+        "push constant 0\n"
+        "return\n"
+    )
+
+
+def test_array_assignment_from_array():
+    source = """
+        class Main {
+            function void main() {
+                var Array array;
+                let array = null;
+                let array = Array.new(2);
+                let array[0] = 15;
+                let array[1] = 30;
+                let array[0] = array[0] + array[1];
+                do Output.printInt(array[0]);
+                do Output.printInt(array[1]);
+                return;
+            }
+        }
+    """
+
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        "function Main.main 1\n"
+        # array = null
+        "push constant 0\n"
+        "pop local 0\n"
+        # Create new 2 element array
+        "push constant 2\n"
+        "call Array.new 1\n"
+        # Store the pointer given to us
+        "pop local 0\n"
+        # array[0] = 15
+        "push local 0\n"
+        "push constant 0\n"
+        "add\n"
+        "push constant 15\n"
+        "pop temp 0\n"
+        "pop pointer 1\n"
+        "push temp 0\n"
+        "pop that 0\n"
+        # array[1] = 30
+        "push local 0\n"
+        "push constant 1\n"
+        "add\n"
+        "push constant 30\n"
+        "pop temp 0\n"
+        "pop pointer 1\n"
+        "push temp 0\n"
+        "pop that 0\n"
+        # Starting:  array[0] = array[0] + array[1]
+        "push local 0\n"
+        "push constant 0\n"
+        "add\n"
+        # Lookup array[0]
+        "push local 0\n"
+        "push constant 0\n"
+        "add\n"
+        "pop pointer 1\n"
+        "push that 0\n"
+        # lookup array[1]
+        "push local 0\n"
+        "push constant 1\n"
+        "add\n"
+        "pop pointer 1\n"
+        "push that 0\n"
+        # Adding, and storing
+        "add\n"
+        "pop temp 0\n"
+        "pop pointer 1\n"
+        "push temp 0\n"
         "pop that 0\n"
         # do Output.printInt(array[0]);
         "push local 0\n"

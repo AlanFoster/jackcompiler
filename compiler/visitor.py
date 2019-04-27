@@ -169,16 +169,27 @@ class Visitor(JackVisitor):
         symbol = self.symbol_table.get(var_name)
         value_expression = self.visit(ctx.value)
 
-        # Handle array assignment
+        # Handle array assignment, including complex a[i] = b[j]
         if ctx.index:
             index_expression = self.visit(ctx.index)
 
             compute_array_location = (
                 f"push {symbol.segment} {symbol.number}\n" + index_expression + "add\n"
-                "pop pointer 1\n"
             )
 
-            return compute_array_location + value_expression + "pop that 0\n"
+            return (
+                # Store a[i] RAM location, but keep it on the stack for later
+                compute_array_location +
+                # Calculate the assignment expression, i.e. b[j]
+                value_expression +
+                # Store the value expression in temp 0
+                "pop temp 0\n"
+                # Top of stack now contains a[i] RAM location, set THAT value
+                "pop pointer 1\n"
+                # a[i] = stored temp expression
+                "push temp 0\n"
+                "pop that 0\n"
+            )
         else:
             store_result = f"pop {symbol.segment} {symbol.number}\n"
 
@@ -264,6 +275,8 @@ class Visitor(JackVisitor):
                 return "push constant 0\nnot\n"
             elif text == "this":
                 return "push pointer 0\n"
+            elif text == "null":
+                return "push constant 0\n"
             else:
                 raise ValueError(f"Unexpected literal value '{text}'")
         elif ctx.varName():
