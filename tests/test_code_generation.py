@@ -553,3 +553,43 @@ def test_strings():
         "push constant 0\n"
         "return\n"
     )
+
+
+def test_statics():
+    source = """
+        class ScreenConstant {
+            static int width;
+            static int height;
+
+            function void init() {
+                let width = 512;
+                let height = 255;
+                return;
+            }
+
+            function int getWidth() {
+                return width;
+            }
+
+            function int getHeight() {
+                return height;
+            }
+        }
+    """
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        "function ScreenConstant.init 0\n"
+        "push constant 512\n"
+        "pop static 0\n"
+        "push constant 255\n"
+        "pop static 1\n"
+        "push constant 0\n"
+        "return\n"
+        "function ScreenConstant.getWidth 0\n"
+        "push static 0\n"
+        "return\n"
+        "function ScreenConstant.getHeight 0\n"
+        "push static 1\n"
+        "return\n"
+    )

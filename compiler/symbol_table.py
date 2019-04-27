@@ -27,6 +27,8 @@ class Symbol:
             return "argument"
         elif self.kind is SymbolType.FIELD:
             return "this"
+        elif self.kind is SymbolType.STATIC:
+            return "static"
         else:
             raise ValueError(f"No segment for {self.kind}")
 
