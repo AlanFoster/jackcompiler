@@ -290,13 +290,31 @@ class Visitor(JackVisitor):
         arg_count = len(ctx.expressionList().expressions)
 
         routine_name = ctx.subroutineName().getText()
-        if ctx.className():
-            routine_name = ctx.className().getText() + "." + routine_name
-        if ctx.varName():
-            routine_name = ctx.className().getText() + "." + routine_name
+        # Simple call, such as foo() which does not have a class or object
+        if not ctx.subroutineTarget():
+            call = f"call {routine_name} {arg_count}\n"
+            return expressions + call
 
-        call = f"call {routine_name} {arg_count}\n"
-        return expressions + call
+        # Handle the more complex scenario of SomeClass.bar() and someObject.bar()
+        target = ctx.subroutineTarget().getText()
+        is_class_call = target[0].isupper()
+        is_object_call = target[1].islower()
+
+        if is_class_call:
+            routine_name = target + "." + routine_name
+            call = f"call {routine_name} {arg_count}\n"
+            return expressions + call
+        elif is_object_call:
+            symbol = self.symbol_table.get(target)
+            class_name = symbol.type_name
+            # Object's method calls must be translated to their classes, and an
+            # extra implicit argument of `this` is added added
+            routine_name = class_name + "." + routine_name
+            object = f"push {symbol.segment} {symbol.number}\n"
+            call = f"call {routine_name} {arg_count + 1}\n"
+            return object + expressions + call
+        else:
+            raise ValueError(f"Could not compile {ctx.getText()}")
 
     # Visit a parse tree produced by JackParser#expressionList.
     def visitExpressionList(self, ctx: JackParser.ExpressionListContext):
@@ -324,7 +342,7 @@ class Visitor(JackVisitor):
         elif ctx.EQ():
             return "eq\n"
         else:
-            raise TypeError(f"Could not handle expression {ctx.getText()}")
+            raise ValueError(f"Could not handle expression {ctx.getText()}")
 
     # Visit a parse tree produced by JackParser#unaryOp.
     def visitUnaryOp(self, ctx: JackParser.UnaryOpContext):
@@ -333,7 +351,7 @@ class Visitor(JackVisitor):
         elif ctx.NOT():
             return "not\n"
         else:
-            raise TypeError(f"Could not handle expression {ctx.getText()}")
+            raise ValueError(f"Could not handle expression {ctx.getText()}")
 
     # Visit a parse tree produced by JackParser#keywordConstant.
     def visitKeywordConstant(self, ctx: JackParser.KeywordConstantContext):

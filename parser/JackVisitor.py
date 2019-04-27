@@ -139,6 +139,11 @@ class JackVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by JackParser#subroutineTarget.
+    def visitSubroutineTarget(self, ctx:JackParser.SubroutineTargetContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by JackParser#expressionList.
     def visitExpressionList(self, ctx:JackParser.ExpressionListContext):
         return self.visitChildren(ctx)

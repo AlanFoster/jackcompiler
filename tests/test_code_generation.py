@@ -249,6 +249,38 @@ def test_constructor():
     )
 
 
+def test_object_creation():
+    source = """
+        class Main {
+            function void main() {
+                var Point point1;
+                let point1 = Point.new(2, 3);
+                do Output.printInt(point1.getLength());
+                return;
+            }
+        }
+    """
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        "function Main.main 1\n"
+        # let point = Point.new(2,3)
+        "push constant 2\n"
+        "push constant 3\n"
+        "call Point.new 2\n"
+        # Store the pointer given to us
+        "pop local 0\n"
+        # do Output.printInt(point.getLength())
+        "push local 0\n"
+        "call Point.getLength 1\n"
+        "call Output.printInt 1\n"
+        "pop temp 0\n"
+        # return
+        "push constant 0\n"
+        "return\n"
+    )
+
+
 def test_arrays():
     source = """
         class Main {

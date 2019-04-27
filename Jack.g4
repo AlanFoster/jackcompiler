@@ -89,8 +89,10 @@ term:
 
 subroutineCall:
     subroutineName '(' expressionList ')'
-    | (className | varName) '.' subroutineName '(' expressionList ')'
+    | subroutineTarget '.' subroutineName '(' expressionList ')'
     ;
+
+subroutineTarget: className | varName ;
 
 expressionList: (expressions+=expression (',' expressions+=expression)*)? ;
 op: ADD | SUB | MUL | DIV | AND | OR | LT | GT | EQ ;

@@ -58,7 +58,7 @@ class SymbolTable:
 
 
 class EmptySymbolTable(SymbolTable):
-    def add(self):
+    def add(self, symbol: Symbol):
         raise NotImplementedError()
 
     def get(self, name):

@@ -242,6 +242,15 @@ class JackListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by JackParser#subroutineTarget.
+    def enterSubroutineTarget(self, ctx:JackParser.SubroutineTargetContext):
+        pass
+
+    # Exit a parse tree produced by JackParser#subroutineTarget.
+    def exitSubroutineTarget(self, ctx:JackParser.SubroutineTargetContext):
+        pass
+
+
     # Enter a parse tree produced by JackParser#expressionList.
     def enterExpressionList(self, ctx:JackParser.ExpressionListContext):
         pass
