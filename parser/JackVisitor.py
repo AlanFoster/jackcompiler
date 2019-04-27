@@ -104,13 +104,13 @@ class JackVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by JackParser#expression.
-    def visitExpression(self, ctx:JackParser.ExpressionContext):
+    # Visit a parse tree produced by JackParser#binaryExpression.
+    def visitBinaryExpression(self, ctx:JackParser.BinaryExpressionContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by JackParser#atom.
-    def visitAtom(self, ctx:JackParser.AtomContext):
+    # Visit a parse tree produced by JackParser#nestedExpression.
+    def visitNestedExpression(self, ctx:JackParser.NestedExpressionContext):
         return self.visitChildren(ctx)
 
 
@@ -119,18 +119,18 @@ class JackVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by JackParser#unaryExpression.
+    def visitUnaryExpression(self, ctx:JackParser.UnaryExpressionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by JackParser#atom.
+    def visitAtom(self, ctx:JackParser.AtomContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by JackParser#subroutineExpression.
     def visitSubroutineExpression(self, ctx:JackParser.SubroutineExpressionContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by JackParser#NestedExpression.
-    def visitNestedExpression(self, ctx:JackParser.NestedExpressionContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by JackParser#UnaryExpression.
-    def visitUnaryExpression(self, ctx:JackParser.UnaryExpressionContext):
         return self.visitChildren(ctx)
 
 
@@ -146,16 +146,6 @@ class JackVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by JackParser#expressionList.
     def visitExpressionList(self, ctx:JackParser.ExpressionListContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by JackParser#op.
-    def visitOp(self, ctx:JackParser.OpContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by JackParser#unaryOp.
-    def visitUnaryOp(self, ctx:JackParser.UnaryOpContext):
         return self.visitChildren(ctx)
 
 

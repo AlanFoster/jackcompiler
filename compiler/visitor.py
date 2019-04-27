@@ -3,6 +3,38 @@ from parser.JackVisitor import JackVisitor
 from .symbol_table import Symbol, EmptySymbolTable, SymbolType
 
 
+def get_unary_operator(op):
+    if op.type == JackParser.SUB:
+        return "neg\n"
+    elif op.type == JackParser.NOT:
+        return "not\n"
+    else:
+        raise ValueError(f"Could not handle operator {op}")
+
+
+def get_binary_operator(op):
+    if op.type == JackParser.ADD:
+        return "add\n"
+    elif op.type == JackParser.SUB:
+        return "sub\n"
+    elif op.type == JackParser.MUL:
+        return "call Math.multiply 2\n"
+    elif op.type == JackParser.DIV:
+        return "call Math.divide 2\n"
+    elif op.type == JackParser.AND:
+        return "and\n"
+    elif op.type == JackParser.OR:
+        return "or\n"
+    elif op.type == JackParser.LT:
+        return "lt\n"
+    elif op.type == JackParser.GT:
+        return "gt\n"
+    elif op.type == JackParser.EQ:
+        return "eq\n"
+    else:
+        raise ValueError(f"Could not handle operator {op}")
+
+
 class Visitor(JackVisitor):
     def __init__(self):
         self.class_name = None
@@ -252,16 +284,34 @@ class Visitor(JackVisitor):
         )
         return return_value + "return\n"
 
-    # Visit a parse tree produced by JackParser#expression.
-    def visitExpression(self, ctx: JackParser.ExpressionContext):
-        first_term = self.visit(ctx.term()[0])
-        op = self.visit(ctx.op()[0]) if ctx.op() else None
-        second_term = self.visit(ctx.term()[1]) if len(ctx.term()) > 1 else None
+    # Visit a parse tree produced by JackParser#binaryExpression.
+    def visitBinaryExpression(self, ctx: JackParser.BinaryExpressionContext):
+        first_term = self.visit(ctx.left)
+        operation = get_binary_operator(ctx.operator)
+        second_term = self.visit(ctx.right)
 
         if second_term is not None:
-            return first_term + second_term + op
+            return first_term + second_term + operation
         else:
             return first_term
+
+    # Visit a parse tree produced by JackParser#arrayReference.
+    def visitArrayReference(self, ctx: JackParser.ArrayReferenceContext):
+        var_name = ctx.varName().getText()
+        symbol = self.symbol_table.get(var_name)
+        index_expression = self.visit(ctx.index)
+
+        return (
+            f"push {symbol.segment} {symbol.number}\n" + index_expression + "add\n"
+            "pop pointer 1\n"
+            "push that 0\n"
+        )
+
+    # Visit a parse tree produced by JackParser#unaryExpression.
+    def visitUnaryExpression(self, ctx:JackParser.UnaryExpressionContext):
+        op = get_unary_operator(ctx.operator)
+        expression = self.visit(ctx.expression())
+        return expression + op
 
     # Visit a parse tree produced by JackParser#atom.
     def visitAtom(self, ctx: JackParser.AtomContext):
@@ -295,18 +345,6 @@ class Visitor(JackVisitor):
         else:
             raise ValueError(f"Could not handle atom {ctx.getText()}")
 
-    # Visit a parse tree produced by JackParser#arrayReference.
-    def visitArrayReference(self, ctx: JackParser.ArrayReferenceContext):
-        var_name = ctx.varName().getText()
-        symbol = self.symbol_table.get(var_name)
-        index_expression = self.visit(ctx.index)
-
-        return (
-            f"push {symbol.segment} {symbol.number}\n" + index_expression + "add\n"
-            "pop pointer 1\n"
-            "push that 0\n"
-        )
-
     # Visit a parse tree produced by JackParser#subroutineExpression.
     def visitSubroutineExpression(self, ctx: JackParser.SubroutineExpressionContext):
         return self.visitChildren(ctx)
@@ -314,10 +352,6 @@ class Visitor(JackVisitor):
     # Visit a parse tree produced by JackParser#NestedExpression.
     def visitNestedExpression(self, ctx: JackParser.NestedExpressionContext):
         return self.visit(ctx.expression())
-
-    # Visit a parse tree produced by JackParser#UnaryExpression.
-    def visitUnaryExpression(self, ctx: JackParser.UnaryExpressionContext):
-        return self.visit(ctx.term()) + self.visit(ctx.unaryOp())
 
     # Visit a parse tree produced by JackParser#subroutineCall.
     def visitSubroutineCall(self, ctx: JackParser.SubroutineCallContext):
@@ -359,38 +393,6 @@ class Visitor(JackVisitor):
     def visitExpressionList(self, ctx: JackParser.ExpressionListContext):
         expressions = "".join([self.visit(child) for child in ctx.expressions])
         return expressions
-
-    # Visit a parse tree produced by JackParser#op.
-    def visitOp(self, ctx: JackParser.OpContext):
-        if ctx.ADD():
-            return "add\n"
-        elif ctx.SUB():
-            return "sub\n"
-        elif ctx.MUL():
-            return "call Math.multiply 2\n"
-        elif ctx.DIV():
-            return "call Math.divide 2\n"
-        if ctx.AND():
-            return "and\n"
-        elif ctx.OR():
-            return "or\n"
-        elif ctx.LT():
-            return "lt\n"
-        elif ctx.GT():
-            return "gt\n"
-        elif ctx.EQ():
-            return "eq\n"
-        else:
-            raise ValueError(f"Could not handle expression {ctx.getText()}")
-
-    # Visit a parse tree produced by JackParser#unaryOp.
-    def visitUnaryOp(self, ctx: JackParser.UnaryOpContext):
-        if ctx.SUB():
-            return "neg\n"
-        elif ctx.NOT():
-            return "not\n"
-        else:
-            raise ValueError(f"Could not handle expression {ctx.getText()}")
 
     # Visit a parse tree produced by JackParser#keywordConstant.
     def visitKeywordConstant(self, ctx: JackParser.KeywordConstantContext):

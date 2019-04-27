@@ -74,17 +74,21 @@ returnStatement:
 
 // Expressions
 
-expression: term (op term)* ;
-
-term:
-    INTEGER                      # atom
-    | STRING                     # atom
-    | keywordConstant            # atom
-    | varName                    # atom
-    | varName '[' index=expression ']' # arrayReference
-    | subroutineCall             # subroutineExpression
-    | '(' expression ')'         # NestedExpression
-    | unaryOp term               # UnaryExpression
+expression:
+    operator=(SUB | NOT) expression                         # unaryExpression
+    | left=expression operator=(MUL | DIV) right=expression # binaryExpression
+    | left=expression operator=(ADD | SUB) right=expression # binaryExpression
+    | left=expression operator=(LT | GT) right=expression   # binaryExpression
+    | left=expression operator=AND right=expression         # binaryExpression
+    | left=expression operator=OR right=expression          # binaryExpression
+    | left=expression operator=EQ right=expression          # binaryExpression
+    | INTEGER                                               # atom
+    | STRING                                                # atom
+    | keywordConstant                                       # atom
+    | varName                                               # atom
+    | varName '[' index=expression ']'                      # arrayReference
+    | subroutineCall                                        # subroutineExpression
+    | '(' expression ')'                                    # nestedExpression
     ;
 
 subroutineCall:
@@ -95,8 +99,6 @@ subroutineCall:
 subroutineTarget: className | varName ;
 
 expressionList: (expressions+=expression (',' expressions+=expression)*)? ;
-op: ADD | SUB | MUL | DIV | AND | OR | LT | GT | EQ ;
-unaryOp: SUB | NOT ;
 
 keywordConstant: TRUE | FALSE | NULL | THIS ;
 
