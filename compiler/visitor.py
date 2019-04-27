@@ -269,6 +269,16 @@ class Visitor(JackVisitor):
         elif ctx.varName():
             symbol = self.symbol_table.get(ctx.varName().getText())
             return f"push {symbol.segment} {symbol.number}\n"
+        elif ctx.STRING():
+            string = ctx.STRING().getText()[1:-1]
+            allocate_string = f"push constant {len(string)}\n" "call String.new 1\n"
+            append_characters = ""
+            for char in string:
+                append_characters += (
+                    f"push constant {ord(char)}\n" "call String.appendChar 2\n"
+                )
+
+            return allocate_string + append_characters
         else:
             raise ValueError(f"Could not handle atom {ctx.getText()}")
 

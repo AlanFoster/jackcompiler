@@ -509,3 +509,47 @@ def test_arrays():
         "push constant 0\n"
         "return\n"
     )
+
+
+def test_strings():
+    source = """
+        class Main {
+            function void main() {
+                do Output.printString("hello world");
+                return;
+            }
+        }
+    """
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        "function Main.main 0\n"
+        "push constant 11\n"
+        "call String.new 1\n"
+        "push constant 104\n"
+        "call String.appendChar 2\n"
+        "push constant 101\n"
+        "call String.appendChar 2\n"
+        "push constant 108\n"
+        "call String.appendChar 2\n"
+        "push constant 108\n"
+        "call String.appendChar 2\n"
+        "push constant 111\n"
+        "call String.appendChar 2\n"
+        "push constant 32\n"
+        "call String.appendChar 2\n"
+        "push constant 119\n"
+        "call String.appendChar 2\n"
+        "push constant 111\n"
+        "call String.appendChar 2\n"
+        "push constant 114\n"
+        "call String.appendChar 2\n"
+        "push constant 108\n"
+        "call String.appendChar 2\n"
+        "push constant 100\n"
+        "call String.appendChar 2\n"
+        "call Output.printString 1\n"
+        "pop temp 0\n"
+        "push constant 0\n"
+        "return\n"
+    )
