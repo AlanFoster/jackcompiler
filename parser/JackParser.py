@@ -53,7 +53,7 @@ def serializedATN():
         buf.write("\2\2X\13\3\2\2\2Y\\\t\3\2\2Z]\7\r\2\2[]\5\30\r\2\\Z\3")
         buf.write("\2\2\2\\[\3\2\2\2]^\3\2\2\2^_\5\16\b\2_`\7\32\2\2`a\5")
         buf.write("\20\t\2ab\7\33\2\2bc\5\22\n\2c\r\3\2\2\2de\7-\2\2e\17")
-        buf.write("\3\2\2\2fg\5\26\f\2gk\7\37\2\2hj\5\26\f\2ih\3\2\2\2jm")
+        buf.write("\3\2\2\2fk\5\26\f\2gh\7\37\2\2hj\5\26\f\2ig\3\2\2\2jm")
         buf.write("\3\2\2\2ki\3\2\2\2kl\3\2\2\2lo\3\2\2\2mk\3\2\2\2nf\3\2")
         buf.write("\2\2no\3\2\2\2o\21\3\2\2\2pt\7\30\2\2qs\5\24\13\2rq\3")
         buf.write("\2\2\2sv\3\2\2\2tr\3\2\2\2tu\3\2\2\2uw\3\2\2\2vt\3\2\2")
@@ -745,8 +745,11 @@ class JackParser ( Parser ):
                 return self.getTypedRuleContext(JackParser.TypedVariableContext,i)
 
 
-        def COMMA(self):
-            return self.getToken(JackParser.COMMA, 0)
+        def COMMA(self, i:int=None):
+            if i is None:
+                return self.getTokens(JackParser.COMMA)
+            else:
+                return self.getToken(JackParser.COMMA, i)
 
         def getRuleIndex(self):
             return JackParser.RULE_parameterList
@@ -782,13 +785,12 @@ class JackParser ( Parser ):
                 self.state = 100
                 localctx._typedVariable = self.typedVariable()
                 localctx.params.append(localctx._typedVariable)
-
-                self.state = 101
-                self.match(JackParser.COMMA)
                 self.state = 105
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << JackParser.INT) | (1 << JackParser.CHAR) | (1 << JackParser.BOOLEAN) | (1 << JackParser.IDENTIFIER))) != 0):
+                while _la==JackParser.COMMA:
+                    self.state = 101
+                    self.match(JackParser.COMMA)
                     self.state = 102
                     localctx._typedVariable = self.typedVariable()
                     localctx.params.append(localctx._typedVariable)

@@ -31,15 +31,11 @@ class Visitor(JackVisitor):
             var_name = typed_variable.varName().getText()
             type_name = typed_variable.typeName().getText()
 
-            self.symbol_table.add(
-                Symbol(name=var_name, type_name=type_name, kind=kind)
-            )
+            self.symbol_table.add(Symbol(name=var_name, type_name=type_name, kind=kind))
             for additional_var in class_var_dec.varName():
                 self.symbol_table.add(
                     Symbol(
-                        name=additional_var.getText(),
-                        type_name=type_name,
-                        kind=kind
+                        name=additional_var.getText(), type_name=type_name, kind=kind
                     )
                 )
 
@@ -85,11 +81,15 @@ class Visitor(JackVisitor):
         self.symbol_table = self.symbol_table.exit_scope()
 
         if kind == "function":
-            function_declaration = f"function {self.class_name}.{name} {local_variable_count}\n"
+            function_declaration = (
+                f"function {self.class_name}.{name} {local_variable_count}\n"
+            )
             return function_declaration + body
 
         if kind == "constructor":
-            function_declaration = f"function {self.class_name}.{name} {local_variable_count}\n"
+            function_declaration = (
+                f"function {self.class_name}.{name} {local_variable_count}\n"
+            )
             object_allocation = (
                 f"push constant {self.symbol_table.field_variable_count()}\n"
                 "call Memory.alloc 1\n"
@@ -267,11 +267,11 @@ class Visitor(JackVisitor):
 
     # Visit a parse tree produced by JackParser#UnaryExpression.
     def visitUnaryExpression(self, ctx: JackParser.UnaryExpressionContext):
-        return self.visitChildren(ctx)
+        return self.visit(ctx.term()) + self.visit(ctx.unaryOp())
 
     # Visit a parse tree produced by JackParser#subroutineCall.
     def visitSubroutineCall(self, ctx: JackParser.SubroutineCallContext):
-        expressions = self.visitChildren(ctx.expressionList()) or ""
+        expressions = self.visit(ctx.expressionList()) or ""
         arg_count = len(ctx.expressionList().expressions)
 
         routine_name = ctx.subroutineName().getText()
@@ -285,7 +285,8 @@ class Visitor(JackVisitor):
 
     # Visit a parse tree produced by JackParser#expressionList.
     def visitExpressionList(self, ctx: JackParser.ExpressionListContext):
-        return self.visitChildren(ctx)
+        expressions = "".join([self.visit(child) for child in ctx.expressions])
+        return expressions
 
     # Visit a parse tree produced by JackParser#op.
     def visitOp(self, ctx: JackParser.OpContext):
@@ -312,7 +313,12 @@ class Visitor(JackVisitor):
 
     # Visit a parse tree produced by JackParser#unaryOp.
     def visitUnaryOp(self, ctx: JackParser.UnaryOpContext):
-        return self.visitChildren(ctx)
+        if ctx.SUB():
+            return "neg\n"
+        elif ctx.NOT():
+            return "not\n"
+        else:
+            raise TypeError(f"Could not handle expression {ctx.getText()}")
 
     # Visit a parse tree produced by JackParser#keywordConstant.
     def visitKeywordConstant(self, ctx: JackParser.KeywordConstantContext):

@@ -102,7 +102,10 @@ class ChildSymbolTable(SymbolTable):
         return self.parent
 
     def field_variable_count(self):
-        return sum(v.kind is SymbolType.FIELD for k, v in self.symbols.items()) + self.parent.field_variable_count()
+        return (
+            sum(v.kind is SymbolType.FIELD for k, v in self.symbols.items())
+            + self.parent.field_variable_count()
+        )
 
     def local_variable_count(self):
         return sum(v.kind is SymbolType.LOCAL for k, v in self.symbols.items())

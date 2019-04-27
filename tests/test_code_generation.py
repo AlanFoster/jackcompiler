@@ -180,6 +180,11 @@ def test_handle_simple_while_loop():
 def test_function_with_arguments():
     source = """
         class Main {
+           function void main() {
+              do Output.printInt(Main.add(5, -10);
+              return;
+           }
+
            function int add(int x, int y) {
               var int answer;
               let answer = x + y;
@@ -190,6 +195,17 @@ def test_function_with_arguments():
     result = compiler.generate(antlr4.InputStream(source))
 
     assert result == (
+        # Main function
+        "function Main.main 0\n"
+        "push constant 5\n"
+        "push constant 10\n"
+        "neg\n"
+        "call Main.add 2\n"
+        "call Output.printInt 1\n"
+        "pop temp 0\n"
+        "push constant 0\n"
+        "return\n"
+        # Add function
         "function Main.add 1\n"
         "push argument 0\n"
         "push argument 1\n"

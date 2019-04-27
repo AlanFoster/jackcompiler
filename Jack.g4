@@ -28,7 +28,7 @@ subRoutineDec:
 
 subroutineName: IDENTIFIER ;
 
-parameterList: (params+=typedVariable (',' params+=typedVariable*))? ;
+parameterList: (params+=typedVariable (',' params+=typedVariable)*)? ;
 
 subroutineBody: '{' varDec* statements '}' ;
 
