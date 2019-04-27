@@ -247,3 +247,61 @@ def test_constructor():
         "push pointer 0\n"
         "return\n"
     )
+
+
+def test_arrays():
+    source = """
+        class Main {
+            function void main() {
+                var Array array;
+                let array = Array.new(2);
+                let array[0] = 15;
+                let array[1] = 30;
+                do Output.printInt(array[0]);
+                do Output.printInt(array[1]);
+                return;
+            }
+        }
+    """
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        "function Main.main 1\n"
+        "push constant 2\n"
+        "call Array.new 1\n"
+        # Store the pointer given to us
+        "pop local 0\n"
+        # array[0] = 15
+        "push local 0\n"
+        "push constant 0\n"
+        "add\n"
+        "pop pointer 1\n"
+        "push constant 15\n"
+        "pop that 0\n"
+        # array[1] = 30
+        "push local 0\n"
+        "push constant 1\n"
+        "add\n"
+        "pop pointer 1\n"
+        "push constant 30\n"
+        "pop that 0\n"
+        # do Output.printInt(array[0]);
+        "push local 0\n"
+        "push constant 0\n"
+        "add\n"
+        "pop pointer 1\n"
+        "push that 0\n"
+        "call Output.printInt 1\n"
+        "pop temp 0\n"
+        # do Output.printInt(array[1]);
+        "push local 0\n"
+        "push constant 1\n"
+        "add\n"
+        "pop pointer 1\n"
+        "push that 0\n"
+        "call Output.printInt 1\n"
+        "pop temp 0\n"
+        # return
+        "push constant 0\n"
+        "return\n"
+    )

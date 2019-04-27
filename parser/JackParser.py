@@ -1794,6 +1794,7 @@ class JackParser ( Parser ):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a JackParser.TermContext
             super().__init__(parser)
+            self.index = None # ExpressionContext
             self.copyFrom(ctx)
 
         def varName(self):
@@ -1801,11 +1802,11 @@ class JackParser ( Parser ):
 
         def LBRACK(self):
             return self.getToken(JackParser.LBRACK, 0)
+        def RBRACK(self):
+            return self.getToken(JackParser.RBRACK, 0)
         def expression(self):
             return self.getTypedRuleContext(JackParser.ExpressionContext,0)
 
-        def RBRACK(self):
-            return self.getToken(JackParser.RBRACK, 0)
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterArrayReference" ):
@@ -1924,7 +1925,7 @@ class JackParser ( Parser ):
                 self.state = 211
                 self.match(JackParser.LBRACK)
                 self.state = 212
-                self.expression()
+                localctx.index = self.expression()
                 self.state = 213
                 self.match(JackParser.RBRACK)
                 pass

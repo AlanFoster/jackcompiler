@@ -153,17 +153,24 @@ class Visitor(JackVisitor):
 
     # Visit a parse tree produced by JackParser#letStatement.
     def visitLetStatement(self, ctx: JackParser.LetStatementContext):
-        if ctx.index:
-            raise ValueError(
-                f"Array indexing not supported yet for expression {ctx.getText()}"
-            )
-
         var_name = ctx.varName().getText()
         symbol = self.symbol_table.get(var_name)
-        calculate_value = self.visit(ctx.value)
-        store_result = f"pop {symbol.segment} {symbol.number}\n"
+        value_expression = self.visit(ctx.value)
 
-        return calculate_value + store_result
+        # Handle array assignment
+        if ctx.index:
+            index_expression = self.visit(ctx.index)
+
+            compute_array_location = (
+                f"push {symbol.segment} {symbol.number}\n" + index_expression + "add\n"
+                "pop pointer 1\n"
+            )
+
+            return compute_array_location + value_expression + "pop that 0\n"
+        else:
+            store_result = f"pop {symbol.segment} {symbol.number}\n"
+
+            return value_expression + store_result
 
     # Visit a parse tree produced by JackParser#ifStatement.
     def visitIfStatement(self, ctx: JackParser.IfStatementContext):
@@ -255,7 +262,15 @@ class Visitor(JackVisitor):
 
     # Visit a parse tree produced by JackParser#arrayReference.
     def visitArrayReference(self, ctx: JackParser.ArrayReferenceContext):
-        return self.visitChildren(ctx)
+        var_name = ctx.varName().getText()
+        symbol = self.symbol_table.get(var_name)
+        index_expression = self.visit(ctx.index)
+
+        return (
+            f"push {symbol.segment} {symbol.number}\n" + index_expression + "add\n"
+            "pop pointer 1\n"
+            "push that 0\n"
+        )
 
     # Visit a parse tree produced by JackParser#subroutineExpression.
     def visitSubroutineExpression(self, ctx: JackParser.SubroutineExpressionContext):

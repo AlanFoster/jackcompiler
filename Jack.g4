@@ -81,7 +81,7 @@ term:
     | STRING                     # atom
     | keywordConstant            # atom
     | varName                    # atom
-    | varName '[' expression ']' # arrayReference
+    | varName '[' index=expression ']' # arrayReference
     | subroutineCall             # subroutineExpression
     | '(' expression ')'         # NestedExpression
     | unaryOp term               # UnaryExpression
