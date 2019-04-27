@@ -249,6 +249,178 @@ def test_constructor():
     )
 
 
+def test_setter_method():
+    source = """
+        class Point {
+            field int x;
+            field int y;
+
+            constructor Point new(int xLocation, int yLocation) {
+                let x = xLocation;
+                let y = yLocation;
+                return this;
+            }
+
+            method void setX(int newX) {
+                let x = newX;
+                return;
+            }
+        }
+    """
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        # ---------------
+        # constructor
+        # ---------------
+        "function Point.new 0\n"
+        # Allocate memory for two local variables and update the `this` pointer
+        "push constant 2\n"
+        "call Memory.alloc 1\n"
+        "pop pointer 0\n"
+        # let x = xLocation
+        "push argument 0\n"
+        "pop this 0\n"
+        # let y = yLocation
+        "push argument 1\n"
+        "pop this 1\n"
+        # Return this pointer
+        "push pointer 0\n"
+        "return\n"
+        # ---------------
+        # setX method
+        # ---------------
+        "function Point.setX 0\n"
+        # set THIS value to argument 0
+        "push argument 0\n"
+        "pop pointer 0\n"
+        # let x = newX;
+        "push argument 1\n"
+        "pop this 0\n"
+        # return
+        "push constant 0\n"
+        "return\n"
+    )
+
+
+def test_getter_method():
+    source = """
+        class Point {
+            field int x;
+            field int y;
+
+            constructor Point new(int xLocation, int yLocation) {
+                let x = xLocation;
+                let y = yLocation;
+                return this;
+            }
+
+            method int getX() {
+                return x;
+            }
+        }
+    """
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        # ---------------
+        # constructor
+        # ---------------
+        "function Point.new 0\n"
+        # Allocate memory for two local variables and update the `this` pointer
+        "push constant 2\n"
+        "call Memory.alloc 1\n"
+        "pop pointer 0\n"
+        # let x = xLocation
+        "push argument 0\n"
+        "pop this 0\n"
+        # let y = yLocation
+        "push argument 1\n"
+        "pop this 1\n"
+        # Return this pointer
+        "push pointer 0\n"
+        "return\n"
+        # ---------------
+        # getX method
+        # ---------------
+        "function Point.getX 0\n"
+        # set THIS value to argument 0
+        "push argument 0\n"
+        "pop pointer 0\n"
+        # return x;
+        "push this 0\n"
+        "return\n"
+    )
+
+
+def test_implicit_object_calls():
+    source = """
+        class Point {
+            field int x;
+            field int y;
+
+            constructor Point new(int xLocation, int yLocation) {
+                let x = xLocation;
+                let y = yLocation;
+                return this;
+            }
+
+            method int getDoubleX() {
+                return getX() + getX();
+            }
+
+            method int getX() {
+                return x;
+            }
+        }
+    """
+    result = compiler.generate(antlr4.InputStream(source))
+
+    assert result == (
+        # ---------------
+        # constructor
+        # ---------------
+        "function Point.new 0\n"
+        # Allocate memory for two local variables and update the `this` pointer
+        "push constant 2\n"
+        "call Memory.alloc 1\n"
+        "pop pointer 0\n"
+        # let x = xLocation
+        "push argument 0\n"
+        "pop this 0\n"
+        # let y = yLocation
+        "push argument 1\n"
+        "pop this 1\n"
+        # Return this pointer
+        "push pointer 0\n"
+        "return\n"
+        # ---------------
+        # getDoubleX method
+        # ---------------
+        "function Point.getDoubleX 0\n"
+        # set THIS value to argument 0
+        "push argument 0\n"
+        "pop pointer 0\n"
+        # return getX() + getX()
+        "push pointer 0\n"
+        "call Point.getX 1\n"
+        "push pointer 0\n"
+        "call Point.getX 1\n"
+        "add\n"
+        "return\n"
+        # ---------------
+        # getX method
+        # ---------------
+        "function Point.getX 0\n"
+        # set THIS value to argument 0
+        "push argument 0\n"
+        "pop pointer 0\n"
+        # return x;
+        "push this 0\n"
+        "return\n"
+    )
+
+
 def test_object_creation():
     source = """
         class Main {
