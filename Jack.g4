@@ -157,4 +157,4 @@ IDENTIFIER: [a-zA-Z] [a-zA-Z0-9_]* ;
 API_COMMENT: ('/**' .*? '*/') -> channel(HIDDEN) ;
 COMMENT: ('/*' .*? '*/') -> channel(HIDDEN) ;
 LINE_COMMENT: ('//' ~( '\r' | '\n' )*) -> channel(HIDDEN) ;
-WS: [ \t\n] -> channel(HIDDEN);
+WS: [ \t\n\r]+ -> channel(HIDDEN);
